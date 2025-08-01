@@ -1,133 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Tap to Earn Game</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    * {
-      box-sizing: border-box;
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: white;
       margin: 0;
       padding: 0;
-    }
-
-    body {
-      font-family: 'Arial', sans-serif;
-      background-color: #111;
-      color: #fff;
+      text-align: center;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding-bottom: 80px;
-      min-height: 100vh;
-      text-align: center;
     }
-
-    h1 {
-      font-size: 28px;
-      margin: 20px 0 10px;
-    }
-
+    h1 { margin: 20px 0 10px; }
+    #coinsDisplay { margin: 10px 0; font-size: 20px; }
     #tapImage {
-      width: 180px;
-      height: auto;
+      width: 150px;
+      margin-top: 10px;
       cursor: pointer;
-      transition: transform 0.1s ease-in-out;
-      margin-top: 20px;
       display: none;
     }
-
-    #tapImage:active {
-      transform: scale(0.95);
-    }
-
-    #coinsDisplay {
-      font-size: 24px;
-      margin-top: 30px;
-    }
-
-    #section-title {
-      margin-top: 8px;
-      font-size: 18px;
-      color: #ccc;
-    }
-
-    .section {
-      display: none;
-      padding: 20px;
-      text-align: center;
-    }
-
-    .section.active {
-      display: block;
-    }
-
+    .section { display: none; padding: 20px; }
+    .section.active { display: block; }
     .nav-bar {
       display: flex;
       justify-content: space-around;
-      align-items: center;
-      background: #000;
-      padding: 5px 0;
-      border-top: 1px solid #222;
       position: fixed;
       bottom: 0;
       width: 100%;
+      background: #000;
+      border-top: 1px solid #333;
+      padding: 10px 0;
     }
-
     .nav-item img {
-      width: 40px;
-      height: 40px;
-      object-fit: contain;
+      width: 30px;
       filter: brightness(1.5);
     }
-
     .nav-item.active img {
       filter: drop-shadow(0 0 5px lime);
     }
-
-    #referralLink {
-      margin: 15px 0;
-      word-break: break-all;
+    #refLink {
+      margin: 10px auto;
+      background: #222;
+      padding: 10px;
+      border-radius: 8px;
+      word-wrap: break-word;
     }
-
-    button.copy-btn {
-      background-color: #28a745;
+    #copyBtn {
+      padding: 10px 20px;
+      background: #1e90ff;
       color: white;
       border: none;
-      padding: 10px 20px;
-      font-size: 16px;
-      border-radius: 8px;
+      border-radius: 6px;
+      margin-top: 10px;
       cursor: pointer;
-    }
-
-    button.copy-btn:active {
-      background-color: #218838;
-    }
-
-    @media (max-width: 480px) {
-      h1 {
-        font-size: 22px;
-      }
-
-      #tapImage {
-        width: 140px;
-      }
-
-      #coinsDisplay {
-        font-size: 20px;
-      }
-
-      #section-title {
-        font-size: 16px;
-      }
     }
   </style>
 </head>
 <body>
-
   <h1>🪙 Tap to Earn</h1>
-
   <div id="coinsDisplay">Coins: 0</div>
   <div id="section-title">Refer & Earn</div>
 
@@ -135,32 +73,31 @@
 
   <!-- Sections -->
   <div id="refer" class="section active">
-    <h2>📨 Refer your friends & earn coins!</h2>
-    <div id="referralLink"></div>
-    <button class="copy-btn" onclick="copyReferralLink()">Copy Referral Link</button>
+    <p>📨 Refer your friends & earn coins!</p>
+    <div id="refLink"></div>
+    <button id="copyBtn">📋 Copy Referral Link</button>
   </div>
-
   <div id="shop" class="section">🛒 Buy MSHYA coins using TON.</div>
   <div id="tap" class="section">👆 Tap to earn SHYA coins!</div>
   <div id="upgrade" class="section">⚙️ Upgrade your tractor and earn more/hour.</div>
   <div id="task" class="section">📋 Complete YouTube/Instagram tasks & earn!</div>
 
-  <!-- Navigation Bar -->
+  <!-- Navigation -->
   <div class="nav-bar">
     <div class="nav-item active" onclick="showSection('refer', this)">
-      <img src="https://i.ibb.co/4gT0LtCx/file-00000000babc61fa95044694319b4acc.png" alt="Refer"/>
+      <img src="https://i.ibb.co/4gT0LtCx/file-00000000babc61fa95044694319b4acc.png" />
     </div>
     <div class="nav-item" onclick="showSection('shop', this)">
-      <img src="https://i.ibb.co/wFmmgqw4/file-00000000a040624684c00386cac32f9a.png" alt="Shop"/>
+      <img src="https://i.ibb.co/wFmmgqw4/file-00000000a040624684c00386cac32f9a.png" />
     </div>
     <div class="nav-item" onclick="showSection('tap', this)">
-      <img src="https://i.ibb.co/MDsF4TLd/file-000000006ff061f6a1fcc874279b2442.png" alt="Tap"/>
+      <img src="https://i.ibb.co/MDsF4TLd/file-000000006ff061f6a1fcc874279b2442.png" />
     </div>
     <div class="nav-item" onclick="showSection('upgrade', this)">
-      <img src="https://i.ibb.co/MDsF4TLd/file-000000006ff061f6a1fcc874279b2442.png" alt="Upgrade"/>
+      <img src="https://i.ibb.co/MDsF4TLd/file-000000006ff061f6a1fcc874279b2442.png" />
     </div>
     <div class="nav-item" onclick="showSection('task', this)">
-      <img src="https://i.ibb.co/TB8txjk7/file-0000000060dc6243bd495498d16db889.png" alt="Task"/>
+      <img src="https://i.ibb.co/TB8txjk7/file-0000000060dc6243bd495498d16db889.png" />
     </div>
   </div>
 
@@ -169,10 +106,20 @@
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZheGVsZXB6aXFxcHRleXFva3JjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQwMTQ3NDcsImV4cCI6MjA2OTU5MDc0N30.tRTdbffdk2Xcq-2YxlZZM2TkYahuhJnrRjesKy-dptQ';
     const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-    let userId = localStorage.getItem('user_id');
+    let userId = '';
     let coins = 0;
 
+    function getTelegramUserId() {
+      if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe?.user?.id) {
+        return 'tg_' + Telegram.WebApp.initDataUnsafe.user.id;
+      }
+      return null;
+    }
+
     async function createUserIfNotExist() {
+      const telegramId = getTelegramUserId();
+      userId = telegramId || localStorage.getItem('user_id');
+
       if (!userId) {
         userId = 'user_' + Math.floor(Math.random() * 100000000);
         localStorage.setItem('user_id', userId);
@@ -192,6 +139,7 @@
       }
 
       updateUI();
+      updateReferralLink();
     }
 
     async function tapAndEarn() {
@@ -206,21 +154,12 @@
 
     function updateUI() {
       document.getElementById('coinsDisplay').innerText = `Coins: ${coins}`;
-      document.getElementById('referralLink').innerText = `http://t.me/Shyamining_bot?start=${userId}`;
-    }
-
-    function copyReferralLink() {
-      const referral = `http://t.me/Shyamining_bot?start=${userId}`;
-      navigator.clipboard.writeText(referral).then(() => {
-        alert("Referral link copied!");
-      }).catch(() => {
-        alert("Failed to copy link.");
-      });
     }
 
     function showSection(id, el) {
       document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
       document.getElementById(id).classList.add('active');
+
       document.getElementById('tapImage').style.display = (id === 'tap') ? 'block' : 'none';
 
       const sectionTitles = {
@@ -234,6 +173,17 @@
 
       document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
       el.classList.add('active');
+    }
+
+    function updateReferralLink() {
+      const refLink = `https://t.me/Shyamining_bot?start=${userId}`;
+      document.getElementById('refLink').innerText = refLink;
+
+      document.getElementById('copyBtn').onclick = () => {
+        navigator.clipboard.writeText(refLink).then(() => {
+          alert('Referral link copied!');
+        });
+      };
     }
 
     document.getElementById('tapImage').addEventListener('click', tapAndEarn);
