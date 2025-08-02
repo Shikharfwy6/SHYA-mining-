@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+      <!DOCTYPE html>
 <html lang="hi">
 <head>
   <meta charset="UTF-8" />
@@ -568,42 +568,38 @@ const supabaseUrl = 'https://vaxelepziqqpteyqokrc.supabase.co';
     const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 
+const tg = window.Telegram.WebApp;
+
+// ✅ Telegram से यूज़र ID लो एक ही फॉर्मेट में
+function getTelegramUserId() {
+  if (tg?.initDataUnsafe?.user?.id) {
+    return 'tg_' + tg.initDataUnsafe.user.id;
+  }
+  return null;
+}
+
 let userId = '';
 
-  function getTelegramUserId() {
-    if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe?.user?.id) {
-      return 'tg_' + Telegram.WebApp.initDataUnsafe.user.id;
-    }
-    return null;
+async function createUserIfNotExist() {
+  userId = getTelegramUserId() || localStorage.getItem('user_id');
+
+  if (!userId) {
+    userId = 'user_' + Math.floor(Math.random() * 100000000);
+    localStorage.setItem('user_id', userId);
   }
 
-  async function createUserIfNotExist() {
-    // Step 1: Try Telegram user ID
-    const telegramId = getTelegramUserId();
+  const { data, error } = await supabase
+    .from('users')
+    .select('id')
+    .eq('id', userId)
+    .single();
 
-    // Step 2: Use localStorage if not Telegram
-    userId = telegramId || localStorage.getItem('user_id');
-
-    // Step 3: If still no ID, create random test ID
-    if (!userId) {
-      userId = 'user_' + Math.floor(Math.random() * 100000000);
-      localStorage.setItem('user_id', userId);
-    }
-
-    // Step 4: Check if user already exists
-    const { data, error } = await supabase
-      .from('users')
-      .select('id')
-      .eq('id', userId)
-      .single();
-
-    // Step 5: Insert new user if not found
-    if (!data) {
-      await supabase.from('users').insert([{ id: userId }]);
-    }
-
-    console.log("User ID:", userId);
+  if (!data) {
+    await supabase.from('users').insert([{ id: userId }]);
   }
+
+  console.log("✅ User ID Set:", userId);
+}
 
 
 // ========================= 🔁 Global Variables =========================
@@ -865,8 +861,8 @@ function handleTask(platform) {
   }, 5000);
 }
 
-// 💰 Buy buttons पर listener लगाओ
-document.querySelectorAll('.shop-buy').forEach((button, index) => {
+// 💰 Buy buttons पर listener
+document.querySelectorAll('.shop-buy').forEach((button) => {
   button.addEventListener('click', async () => {
     const row = button.closest('.shop-row');
     const amountText = row.querySelector('.shop-amount').innerText;
@@ -875,22 +871,17 @@ document.querySelectorAll('.shop-buy').forEach((button, index) => {
     const confirmed = confirm(`क्या आप ${mshyaAmount.toLocaleString()} MSHYA खरीदना चाहते हैं?`);
     if (!confirmed) return;
 
-    // ⛓️ Telegram user ID लेना
-    const tg = window.Telegram.WebApp;
-    const userId = tg?.initDataUnsafe?.user?.id;
+    const buyUserId = getTelegramUserId();
 
-    console.log("Telegram User ID:", userId); // ✅ Debugging purpose
-
-    if (!userId) {
+    if (!buyUserId) {
       alert('❌ Telegram से User ID नहीं मिली। कृपया Telegram Bot के अंदर गेम खोलें।');
       return;
     }
 
-    // ✅ Supabase से user fetch करो
     let { data: user, error } = await supabase
       .from('users')
       .select('mshya')
-      .eq('tg_id', userId) // ✅ यह tg_id होना चाहिए
+      .eq('id', buyUserId)
       .single();
 
     if (error || !user) {
@@ -900,11 +891,10 @@ document.querySelectorAll('.shop-buy').forEach((button, index) => {
 
     const newBalance = (user.mshya || 0) + mshyaAmount;
 
-    // 🔄 Supabase में balance update करो
     const { error: updateError } = await supabase
       .from('users')
       .update({ mshya: newBalance })
-      .eq('tg_id', userId); // ✅ tg_id से match करो
+      .eq('id', buyUserId);
 
     if (updateError) {
       alert('❌ Balance update में error आया!');
@@ -1043,8 +1033,8 @@ updateBalanceUI();
 
 
 // ========================= 💾 Save & Reset =========================
+// 🔄 Game Save function
 async function saveData() {
-  // ✅ Local Storage Save
   localStorage.setItem("mshya", mshya);
   localStorage.setItem("totalShya", totalShya);
   localStorage.setItem("shyaPerHour", shyaPerHour);
@@ -1056,7 +1046,6 @@ async function saveData() {
   localStorage.setItem("lastEnergyUpdate", Date.now());
   localStorage.setItem("lastEnergyUpdateTime", Date.now().toString());
 
-  // ✅ Supabase Update
   if (userId) {
     const { error } = await supabase
       .from('users')
