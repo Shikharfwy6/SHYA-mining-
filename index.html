@@ -865,7 +865,6 @@ function handleTask(platform) {
   }, 5000);
 }
 
-
 // 💰 Buy buttons पर listener लगाओ
 document.querySelectorAll('.shop-buy').forEach((button, index) => {
   button.addEventListener('click', async () => {
@@ -873,13 +872,13 @@ document.querySelectorAll('.shop-buy').forEach((button, index) => {
     const amountText = row.querySelector('.shop-amount').innerText;
     const mshyaAmount = parseInt(amountText.replace(/[^0-9]/g, ''));
 
-    // ✅ यहां fake payment simulate कर रहे हैं (TON gateway future में जोड़ना)
     const confirmed = confirm(`क्या आप ${mshyaAmount.toLocaleString()} MSHYA खरीदना चाहते हैं?`);
     if (!confirmed) return;
 
-    // ⛓️ Telegram user ID लेना (webApp से)
+    // ⛓️ Telegram user ID लेना
     const tg = window.Telegram.WebApp;
-    const userId = tg.initDataUnsafe?.user?.id;
+    const userId = tg?.initDataUnsafe?.user?.id || "testUser123"; // ✅ fallback for test
+
     if (!userId) {
       alert('User ID नहीं मिला');
       return;
@@ -889,10 +888,10 @@ document.querySelectorAll('.shop-buy').forEach((button, index) => {
     let { data: user, error } = await supabase
       .from('users')
       .select('mshya')
-      .eq('tg_id', userId)
+      .eq('id', userId) // 🔁 यहां 'id' किया 'tg_id' की जगह
       .single();
 
-    if (error) {
+    if (error || !user) {
       alert('User नहीं मिला Supabase में');
       return;
     }
@@ -903,7 +902,7 @@ document.querySelectorAll('.shop-buy').forEach((button, index) => {
     const { error: updateError } = await supabase
       .from('users')
       .update({ mshya: newBalance })
-      .eq('tg_id', userId);
+      .eq('id', userId); // 🔁 यहीं भी 'id'
 
     if (updateError) {
       alert('Balance update में error आया!');
@@ -912,6 +911,7 @@ document.querySelectorAll('.shop-buy').forEach((button, index) => {
     }
   });
 });
+
 
 // ========================= 🛒 Energy Pack Purchase =========================
 // ✅ Initialization: अगर पहले से coin नहीं हैं, तो सेट करो
