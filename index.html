@@ -877,10 +877,12 @@ document.querySelectorAll('.shop-buy').forEach((button, index) => {
 
     // ⛓️ Telegram user ID लेना
     const tg = window.Telegram.WebApp;
-    const userId = tg?.initDataUnsafe?.user?.id || "testUser123"; // ✅ fallback for test
+    const userId = tg?.initDataUnsafe?.user?.id;
+
+    console.log("Telegram User ID:", userId); // ✅ Debugging purpose
 
     if (!userId) {
-      alert('User ID नहीं मिला');
+      alert('❌ Telegram से User ID नहीं मिली। कृपया Telegram Bot के अंदर गेम खोलें।');
       return;
     }
 
@@ -888,11 +890,11 @@ document.querySelectorAll('.shop-buy').forEach((button, index) => {
     let { data: user, error } = await supabase
       .from('users')
       .select('mshya')
-      .eq('tg_id', userId) // ✅ fix here
+      .eq('tg_id', userId) // ✅ यह tg_id होना चाहिए
       .single();
 
     if (error || !user) {
-      alert('User नहीं मिला Supabase में');
+      alert('❌ User नहीं मिला Supabase में। हो सकता है आपने signup/register नहीं किया हो।');
       return;
     }
 
@@ -902,16 +904,15 @@ document.querySelectorAll('.shop-buy').forEach((button, index) => {
     const { error: updateError } = await supabase
       .from('users')
       .update({ mshya: newBalance })
-      .eq('tg_id', userId); // ✅ fix here too
+      .eq('tg_id', userId); // ✅ tg_id से match करो
 
     if (updateError) {
-      alert('Balance update में error आया!');
+      alert('❌ Balance update में error आया!');
     } else {
-      alert(`${mshyaAmount.toLocaleString()} MSHYA coins आपके अकाउंट में जोड़ दिए गए!`);
+      alert(`✅ ${mshyaAmount.toLocaleString()} MSHYA coins आपके अकाउंट में जोड़ दिए गए!`);
     }
   });
 });
-
 
 // ========================= 🛒 Energy Pack Purchase =========================
 // ✅ Initialization: अगर पहले से coin नहीं हैं, तो सेट करो
