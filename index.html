@@ -1,219 +1,1205 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
   <meta charset="UTF-8" />
-  <title>Tap to Earn Game</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SHYA Tap Game</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap">
   <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: Arial, sans-serif;
-      background: #111;
+      font-family: 'Orbitron', sans-serif;
+      background: #000 url('https://i.ibb.co/ymZnKW16/file-00000000c26061f9bc4b0ae925c5943e.png') no-repeat center center/cover;
+      height: 100vh;
+      overflow: hidden;
+      color: #fff;
+    }
+    .section {
+      display: none;
+      padding: 20px;
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 65px;
+      overflow-y: auto;
+      z-index: 1;
+    }
+    #tapSection { display: block; }
+
+    .top-counters {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  flex-direction: column; /* यही लाइन तय करती है कि एक के नीचे एक आए */
+  gap: 8px; /* दोनों के बीच थोड़ी दूरी */
+}
+    .counter {
+      display: flex;
+      align-items: center;
+      font-size: 16px;
+      font-weight: bold;
+      text-shadow: 0 0 5px red;
+    }
+    .counter img {
+      width: 28px; height: 28px;
+      margin-right: 6px;
+    }
+
+    .right-buttons {
+      position: absolute;
+      top: 10px; right: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 2;
+    }
+    .right-buttons button {
+      padding: 6px 10px;
+      font-weight: bold;
+      border: none;
+      border-radius: 20px;
+      background: rgba(0,191,255,0.15);
+      box-shadow: 0 0 10px #00bfff;
       color: white;
-      margin: 0;
-      padding: 0;
-      text-align: center;
-      min-height: 100vh;
+      cursor: pointer;
+    }
+
+    .main-section {
+      margin-top: 120px;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
-    h1 { margin: 20px 0 10px; }
-    #coinsDisplay { margin: 10px 0; font-size: 20px; }
-    #tapImage {
-      width: 150px;
-      margin-top: 10px;
-      cursor: pointer;
-      display: none;
+    h1 {
+      font-size: 24px;
+      margin-bottom: 10px;
     }
-    .section { display: none; padding: 20px; }
-    .section.active { display: block; }
-    .nav-bar {
-      display: flex;
-      justify-content: space-around;
+    .energy-bar {
+  position: relative;
+  width: 200px;
+  height: 16px;
+  background: #111;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid #00ffff;
+  box-shadow: 0 0 10px #00ffff;
+  margin-bottom: 20px;
+}
+.energy-text {
+  position: absolute;
+  width: 100%;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  text-align: center;
+  font-size: 14px;
+  color: #00ffff;
+  font-weight: bold;
+  z-index: 10;
+  pointer-events: none;
+}
+    .energy-fill {
+      width: 70%;
+      height: 100%;
+      background: linear-gradient(90deg, #00f6ff, #00ff99);
+      animation: pulse 2s infinite ease-in-out;
+    }
+.tap-text {
+  position: absolute;
+  color: #00ff00;
+  font-size: 16px;
+  font-weight: bold;
+  animation: floatUp 1s ease-out forwards;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+@keyframes floatUp {
+  0% {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-40px);
+  }
+}
+.coin-upgrade-box {
+  background: #1e1e1e;
+  padding: 20px;
+  border-radius: 12px;
+  margin: 10px auto;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 0 10px #00ffcc33;
+}
+.shop-section {
+  padding: 20px;
+  background: transparent !important;
+  border-radius: 0px;
+  margin-top: 100px;
+  font-family: 'Orbitron', sans-serif;
+  border: none;
+  box-shadow: none;
+}
+
+.shop-heading {
+  color: #fff;
+  font-size: 20px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.shop-row {
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.shop-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+}
+
+.shop-amount {
+  flex: 1;
+  color: #fff;
+  font-size: 14px;
+  margin-left: 15px;
+}
+
+.shop-price {
+  color: #00ffaa;
+  font-size: 14px;
+  margin-right: 10px;
+  white-space: nowrap;
+}
+
+.shop-buy {
+  background-color: #00ffaa;
+  color: #000;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.shop-buy:hover {
+  background-color: #00ddaa;
+}
+.task-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #1f1f1f;
+  padding: 15px;
+  border-radius: 12px;
+  margin: 10px 20px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+
+.task-icon {
+  width: 40px;
+  height: 40px;
+  margin-right: 15px;
+}
+
+.task-text {
+  flex-grow: 1;
+  color: #fff;
+}
+
+.task-btn {
+  padding: 8px 15px;
+  background-color: #2ecc71;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+}
+#resetButton {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+  z-index: 9999;
+}
+
+    @keyframes pulse {
+      0% { opacity: 0.6; }
+      50% { opacity: 1; }
+      100% { opacity: 0.6; }
+    }
+
+    .coin-wrapper {
+      width: 180px;
+      height: 180px;
+      cursor: pointer;
+    }
+    .coin-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+.auto-tap-btn {
+  background: linear-gradient(135deg, #5f72be, #9b23ea);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+  width: 260px;
+  margin: 8px auto;
+  display: inline-block;
+}
+
+.auto-tap-btn:hover {
+  transform: scale(1.03);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+    .bottom-images {
       position: fixed;
       bottom: 0;
+      left: 0;
+      right: 0;
+      height: 65px;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 999;
+    }
+    .image-box {
+      width: 55px;
+      height: 55px;
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+    }
+    .image-box img {
       width: 100%;
-      background: #000;
-      border-top: 1px solid #333;
-      padding: 10px 0;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 12px;
     }
-    .nav-item img {
-      width: 30px;
-      filter: brightness(1.5);
-    }
-    .nav-item.active img {
-      filter: drop-shadow(0 0 5px lime);
-    }
-    #refLink {
-      margin: 10px auto;
-      background: #222;
-      padding: 10px;
-      border-radius: 8px;
-      word-wrap: break-word;
-    }
-    #copyBtn {
-      padding: 10px 20px;
-      background: #1e90ff;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      margin-top: 10px;
-      cursor: pointer;
-    }
+
+    
   </style>
 </head>
 <body>
-  <h1>🪙 Tap to Earn</h1>
-  <div id="coinsDisplay">Coins: 0</div>
-  <div id="section-title">Refer & Earn</div>
 
-  <img id="tapImage" src="https://i.ibb.co/wZDGj5Xy/file-000000008f84622f93729c1d425779dd.png" alt="Tap" />
-
-  <!-- Sections -->
-  <div id="refer" class="section active">
-    <p>📨 Refer your friends & earn coins!</p>
-    <div id="refLink"></div>
-    <button id="copyBtn">📋 Copy Referral Link</button>
+<!-- ✅ Top Counter with Profit Per Hour -->
+<div class="top-counters">
+  <div class="counter">
+    <img src="https://i.ibb.co/wZDGj5Xy/file-000000008f84622f93729c1d425779dd.png" />
+    <span id="counter1">0</span>
   </div>
-  <div id="shop" class="section">🛒 Buy MSHYA coins using TON.</div>
-  <div id="tap" class="section">👆 Tap to earn SHYA coins!</div>
-  <div id="upgrade" class="section">⚙️ Upgrade your tractor and earn more/hour.</div>
-  <div id="task" class="section">📋 Complete YouTube/Instagram tasks & earn!</div>
-
-  <!-- Navigation -->
-  <div class="nav-bar">
-    <div class="nav-item active" onclick="showSection('refer', this)">
-      <img src="https://i.ibb.co/4gT0LtCx/file-00000000babc61fa95044694319b4acc.png" />
-    </div>
-    <div class="nav-item" onclick="showSection('shop', this)">
-      <img src="https://i.ibb.co/wFmmgqw4/file-00000000a040624684c00386cac32f9a.png" />
-    </div>
-    <div class="nav-item" onclick="showSection('tap', this)">
-      <img src="https://i.ibb.co/MDsF4TLd/file-000000006ff061f6a1fcc874279b2442.png" />
-    </div>
-    <div class="nav-item" onclick="showSection('upgrade', this)">
-      <img src="https://i.ibb.co/MDsF4TLd/file-000000006ff061f6a1fcc874279b2442.png" />
-    </div>
-    <div class="nav-item" onclick="showSection('task', this)">
-      <img src="https://i.ibb.co/TB8txjk7/file-0000000060dc6243bd495498d16db889.png" />
+  <div class="counter">
+    <img src="https://i.ibb.co/svq9HFvz/file-00000000727c623084165a95a77c6a14.png" />
+    <div>
+      <div id="counter2" style="font-size: 16px;">0</div>
+      <div id="rateText" style="font-size: 12px; color: #0ff;">+0/h 🚀</div>
     </div>
   </div>
+</div>
+<!-- ✅ Right Corner Buttons -->
+<div class="right-buttons">
+  <button onclick="showSection('upgradeCoinSection')">📈 Upgrade Coin</button>
+  <button onclick="showSection('autoTapSection')">⛏️ Auto Tap</button>
+</div>
+<!-- 🔁 All Sections -->
+<div class="section" id="tapSection">
+  <div class="main-section">
+    <h1>Tap and Earn</h1>
+    <div class="energy-bar">
+      <div class="energy-fill"></div>
+      <span class="energy-text">1000 / 1000</span>
+    </div>
+    <div class="coin-wrapper" id="coin">
+      <img src="https://i.ibb.co/sp2XG3DZ/1000099106-removebg-preview.png" />
+    </div>
+  </div>
+</div>
+<div class="section" id="autoTapSection">
+  <h2 style="text-align:center; margin-top: 120px;">⛏️ Auto Tap Packs</h2>
+  <div style="text-align:center; margin-top: 20px;">
+    <p>Auto Tap Speed: <b>0.1 sec</b></p>
 
-  <script>
-    const supabaseUrl = 'https://vaxelepziqqpteyqokrc.supabase.co';
+    <button class="auto-tap-btn" onclick="buyAutoTap(10 * 60 * 1000, 20, 'MSHYA')">🔓 10 min — 20 MSHYA</button><br><br>
+    <button class="auto-tap-btn" onclick="buyAutoTap(2 * 60 * 60 * 1000, 0.0001, 'TON')">🔓 2 hrs — 0.0001 TON</button><br><br>
+    <button class="auto-tap-btn" onclick="buyAutoTap(12 * 60 * 60 * 1000, 0.5, 'TON')">🔓 12 hrs — 0.5 TON</button><br><br>
+    <button class="auto-tap-btn" onclick="buyAutoTap(24 * 60 * 60 * 1000, 1, 'TON')">🔓 24 hrs — 1 TON</button><br><br>
+
+    <p id="autoTapStatus">Status: <span style="color:red;">OFF</span></p>
+    <p>Time Left: <span id="autoTapTimer">-</span></p>
+  </div>
+</div>
+<!-- ✅ UPGRADE SECTION -->
+<div class="section" id="upgradeSection">
+  <div class="main-section">
+    <h2 style="margin-bottom: 16px;">🚀 Vehicle Upgrade</h2>
+    <div id="upgradeContainer" style="text-align: center; padding: 20px; background: rgba(0,0,0,0.6); border-radius: 16px; box-shadow: 0 0 12px cyan;">
+      <div style="font-size: 42px;" id="partEmoji">🛞</div>
+      <div style="margin: 10px 0; font-size: 14px; color: #ccc;">
+        Upgrade #<span id="partLevel">1</span>/9999
+      </div>
+      <div style="margin-bottom: 10px; color: #0ff;">
+        Profit Boost: +<span id="profitAmount">0</span>/h 🚀
+      </div>
+      <div style="margin-bottom: 20px; color: #ff0;">
+        Price: <span id="priceAmount">500</span> MSHYA 💰
+      </div>
+      <button onclick="buyUpgrade()" style="padding: 10px 20px; background: #00bfff; border: none; color: #fff; font-weight: bold; border-radius: 12px; cursor: pointer;">
+        Buy Upgrade
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 📈 Upgrade Coin Section --><div class="section" id="upgradeCoinSection">
+  <h2 style="text-align:center; margin-top: 120px; color:#00ffd5;">📈 Upgrade Coin Section</h2>
+  <div class="coin-upgrade-box" style="text-align:center; margin-top: 20px; background:#1a1a1a; padding:20px; border-radius:12px; max-width:500px; margin:auto; border:1px solid #333;">
+    <p>🔼 <strong>Coin Tap Power:</strong> <span id="tapPower">1</span></p>
+    <p>💰 <strong>Upgrade Cost:</strong> <span id="coinUpgradeCost">500</span> MSHYA</p>
+    <button onclick="upgradeCoinTap()" style="padding: 10px 20px; background: #ffcc00; border: none; color: #000; font-weight: bold; border-radius: 12px; cursor: pointer; margin-top: 15px;">
+      Upgrade Coin Power
+    </button>
+  </div>  
+<!-- ⚡ Energy Recovery Packs Section -->  
+<div id="energyPackButtons" style="margin-top: 50px;">
+  <h3 style="text-align:center; color:#00ffd5;">⚡ Energy Recovery Packs</h3>
+
+  <div style="background:#1a1a1a; padding:15px; margin:15px auto; max-width:500px; border-radius:12px; border:1px solid #333; text-align:center;">
+    <h4>⚡ 4s Recovery</h4>
+    <p>Lifetime • Cost: <b>10,000 MSHYA</b></p>
+    <button id="buyPack1" onclick="buyEnergyPack(1)" style="background:#00ffd5; color:black; border:none; padding:10px 15px; border-radius:10px; font-weight:bold; cursor:pointer;">Buy</button>
+  </div>
+
+  <div style="background:#1a1a1a; padding:15px; margin:15px auto; max-width:500px; border-radius:12px; border:1px solid #333; text-align:center;">
+    <h4>⚡ 3s Recovery</h4>
+    <p>Lifetime • Cost: <b>25,000 MSHYA</b></p>
+    <button id="buyPack2" onclick="buyEnergyPack(2)" style="background:#00ffd5; color:black; border:none; padding:10px 15px; border-radius:10px; font-weight:bold; cursor:pointer;">Buy</button>
+  </div>
+
+  <div style="background:#1a1a1a; padding:15px; margin:15px auto; max-width:500px; border-radius:12px; border:1px solid #333; text-align:center;">
+    <h4>⚡ 2s Recovery</h4>
+    <p>Lifetime • Cost: <b>50,000 MSHYA</b></p>
+    <button id="buyPack3" onclick="buyEnergyPack(3)" style="background:#00ffd5; color:black; border:none; padding:10px 15px; border-radius:10px; font-weight:bold; cursor:pointer;">Buy</button>
+  </div>
+
+  <div style="background:#1a1a1a; padding:15px; margin:15px auto; max-width:500px; border-radius:12px; border:1px solid #333; text-align:center;">
+    <h4>⚡ 1s Recovery</h4>
+    <p>30 Days • Cost: <b>0.5 TON</b></p>
+    <button id="buyPack4" onclick="buyEnergyPack(4)" style="background:#00ffd5; color:black; border:none; padding:10px 15px; border-radius:10px; font-weight:bold; cursor:pointer;">Buy</button>
+  </div>
+
+  <div style="background:#1a1a1a; padding:15px; margin:15px auto; max-width:500px; border-radius:12px; border:1px solid #333; text-align:center;">
+    <h4>⚡ Instant Recovery</h4>
+    <p>30 Days • Cost: <b>1 TON</b></p>
+    <button id="buyPack5" onclick="buyEnergyPack(5)" style="background:#00ffd5; color:black; border:none; padding:10px 15px; border-radius:10px; font-weight:bold; cursor:pointer;">Buy</button>
+  </div>
+
+  <div style="background:#1a1a1a; padding:15px; margin:15px auto; max-width:500px; border-radius:12px; border:1px solid #333; text-align:center;">
+    <h4>⚡ 1s Recovery (Short)</h4>
+    <p>10 Hours • Cost: <b>0.0001 TON</b></p>
+    <button id="buyPack6" onclick="buyEnergyPack(6)" style="background:#00ffd5; color:black; border:none; padding:10px 15px; border-radius:10px; font-weight:bold; cursor:pointer;">Buy</button>
+  </div>
+</div>
+</div>
+
+
+<!-- 📣 Refer Section -->
+<div class="section" id="referSection" style="display: none;">
+  <div class="main-section" style="margin-top: 100px; text-align: center;">
+    <img src="https://i.ibb.co/ZRhw39ct/file-00000000727c623084165a95a77c6c14.png" alt="Refer and Earn" style="width: 200px; margin-bottom: 20px;" /><h2 style="color: #00ffff; font-size: 20px; margin-bottom: 10px;">🎁 Refer & Earn</h2>
+<p style="font-size: 14px; color: #ccc; margin-bottom: 20px;">Receive reward for every successful referral <strong>9929 SHYA</strong> 💰</p>
+
+<div style="display: flex; justify-content: center; align-items: center; margin-bottom: 20px;">
+  <input id="refLink" type="text" readonly value="https://t.me/shya_bot?start=yourUsername" 
+         style="width: 260px; padding: 8px 10px; border-radius: 10px 0 0 10px; border: none; outline: none; font-size: 14px;">
+  <button onclick="copyRefLink()" 
+          style="padding: 8px 15px; background: #00bfff; color: white; font-weight: bold; border: none; border-radius: 0 10px 10px 0; cursor: pointer;">
+    कॉपी करें
+  </button>
+</div>
+
+<p style="font-size: 12px; color: #888;">The list of users you have invited will appear below(after)</p>
+
+  </div>
+</div>
+<!-- SHOP SECTION -->
+<div class="shop-section section" id="shop">
+  <h2 class="shop-heading">🛒 MSHYA Coin Shop</h2>
+
+  <!-- Package 1 -->
+  <div class="shop-row">
+    <img src="https://i.ibb.co/wZDGj5Xy/file-000000008f84622f93729c1d425779dd.png" class="shop-logo" />
+    <div class="shop-amount">100,000 MSHYA</div>
+    <div class="shop-price">0.001 TON</div>
+    <button class="shop-buy">Buy</button>
+  </div>
+
+  <!-- Package 2 to 11 -->
+  <div class="shop-row">
+    <img src="https://i.ibb.co/wZDGj5Xy/file-000000008f84622f93729c1d425779dd.png" class="shop-logo" />
+    <div class="shop-amount">1,000,000 MSHYA</div>
+    <div class="shop-price">1 TON</div>
+    <button class="shop-buy">Buy</button>
+  </div>
+  <div class="shop-row">
+    <img src="https://i.ibb.co/wZDGj5Xy/file-000000008f84622f93729c1d425779dd.png" class="shop-logo" />
+    <div class="shop-amount">2,000,000 MSHYA</div>
+    <div class="shop-price">2 TON</div>
+    <button class="shop-buy">Buy</button>
+  </div>
+  <div class="shop-row">
+    <img src="https://i.ibb.co/wZDGj5Xy/file-000000008f84622f93729c1d425779dd.png" class="shop-logo" />
+    <div class="shop-amount">3,000,000 MSHYA</div>
+    <div class="shop-price">3 TON</div>
+    <button class="shop-buy">Buy</button>
+  </div>
+  <div class="shop-row">
+    <img src="https://i.ibb.co/wZDGj5Xy/file-000000008f84622f93729c1d425779dd.png" class="shop-logo" />
+    <div class="shop-amount">4,000,000 MSHYA</div>
+    <div class="shop-price">4 TON</div>
+    <button class="shop-buy">Buy</button>
+  </div>
+  <div class="shop-row">
+    <img src="https://i.ibb.co/wZDGj5Xy/file-000000008f84622f93729c1d425779dd.png" class="shop-logo" />
+    <div class="shop-amount">5,000,000 MSHYA</div>
+    <div class="shop-price">5 TON</div>
+    <button class="shop-buy">Buy</button>
+  </div>
+  <div class="shop-row">
+    <img src="https://i.ibb.co/wZDGj5Xy/file-000000008f84622f93729c1d425779dd.png" class="shop-logo" />
+    <div class="shop-amount">6,000,000 MSHYA</div>
+    <div class="shop-price">6 TON</div>
+    <button class="shop-buy">Buy</button>
+  </div>
+  <div class="shop-row">
+    <img src="https://i.ibb.co/wZDGj5Xy/file-000000008f84622f93729c1d425779dd.png" class="shop-logo" />
+    <div class="shop-amount">7,000,000 MSHYA</div>
+    <div class="shop-price">7 TON</div>
+    <button class="shop-buy">Buy</button>
+  </div>
+  <div class="shop-row">
+    <img src="https://i.ibb.co/wZDGj5Xy/file-000000008f84622f93729c1d425779dd.png" class="shop-logo" />
+    <div class="shop-amount">8,000,000 MSHYA</div>
+    <div class="shop-price">8 TON</div>
+    <button class="shop-buy">Buy</button>
+  </div>
+  <div class="shop-row">
+    <img src="https://i.ibb.co/wZDGj5Xy/file-000000008f84622f93729c1d425779dd.png" class="shop-logo" />
+    <div class="shop-amount">9,000,000 MSHYA</div>
+    <div class="shop-price">9 TON</div>
+    <button class="shop-buy">Buy</button>
+  </div>
+  <div class="shop-row">
+    <img src="https://i.ibb.co/wZDGj5Xy/file-000000008f84622f93729c1d425779dd.png" class="shop-logo" />
+    <div class="shop-amount">10,000,000 MSHYA</div>
+    <div class="shop-price">10 TON</div>
+    <button class="shop-buy">Buy</button>
+  </div>
+</div>
+
+<!-- 📋 Task Section -->
+<div class="section" id="taskSection">
+  <h2 style="text-align:center; margin-top: 120px;">📋 Task Section</h2>  <div class="task-card">
+    <img src="https://i.ibb.co/Fk7bm6Pn/file-00000000b1a061f9aeb5ca6677c6dccd.png" class="task-icon">
+    <div class="task-text">
+      <strong>Follow on Instagram</strong><br>
+      +100 SHYA
+    </div>
+    <button class="task-btn" onclick="handleTask('instagram')">Start</button>
+  </div>  <div class="task-card">
+    <img src="https://i.ibb.co/p6wgxb6C/file-00000000cdac61f89ac98cdfa64783b2.png" class="task-icon">
+    <div class="task-text">
+      <strong>Subscribe on YouTube</strong><br>
+      +100 SHYA
+    </div>
+    <button class="task-btn" onclick="handleTask('youtube')">Start</button>
+  </div>
+</div>
+<!-- 🔻 Bottom Nav -->
+<div class="bottom-images">
+  <div class="image-box" onclick="showSection('referSection')">
+    <img src="https://i.ibb.co/4gT0LtCx/file-00000000babc61fa95044694319b4acc.png" />
+  </div>
+  <div class="image-box" onclick="showSection('shop')">
+    <img src="https://i.ibb.co/wFmmgqw4/file-00000000a040624684c00386cac32f9a.png" />
+  </div>
+  <div class="image-box" onclick="showSection('tapSection')">
+    <img src="https://i.ibb.co/MDsF4TLd/file-000000006ff061f6a1fcc874279b2442.png" />
+  </div>
+  <div class="image-box" onclick="showSection('upgradeSection')">
+    <img src="https://i.ibb.co/HTPHpRrf/file-000000007f1c62468208ec1081af5112.png" />
+  </div>
+  <div class="image-box" onclick="showSection('taskSection')">
+    <img src="https://i.ibb.co/TB8txjk7/file-0000000060dc6243bd495498d16db889.png" />
+  </div>
+</div>
+<div class="reset-section">
+  <button id="resetButton">🔄 Reset</button>
+</div>
+
+<!-- ✅ JS -->
+<script>
+const supabaseUrl = 'https://vaxelepziqqpteyqokrc.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZheGVsZXB6aXFxcHRleXFva3JjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQwMTQ3NDcsImV4cCI6MjA2OTU5MDc0N30.tRTdbffdk2Xcq-2YxlZZM2TkYahuhJnrRjesKy-dptQ';
     const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-    let userId = '';
-    let coins = 0;
 
-    function getTelegramUserId() {
-      if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe?.user?.id) {
-        return 'tg_' + Telegram.WebApp.initDataUnsafe.user.id;
-      }
-      return null;
+let userId = '';
+
+  function getTelegramUserId() {
+    if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe?.user?.id) {
+      return 'tg_' + Telegram.WebApp.initDataUnsafe.user.id;
+    }
+    return null;
+  }
+
+  async function createUserIfNotExist() {
+    // Step 1: Try Telegram user ID
+    const telegramId = getTelegramUserId();
+
+    // Step 2: Use localStorage if not Telegram
+    userId = telegramId || localStorage.getItem('user_id');
+
+    // Step 3: If still no ID, create random test ID
+    if (!userId) {
+      userId = 'user_' + Math.floor(Math.random() * 100000000);
+      localStorage.setItem('user_id', userId);
     }
 
-    function getReferralIdFromURL() {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get("start");
+    // Step 4: Check if user already exists
+    const { data, error } = await supabase
+      .from('users')
+      .select('id')
+      .eq('id', userId)
+      .single();
+
+    // Step 5: Insert new user if not found
+    if (!data) {
+      await supabase.from('users').insert([{ id: userId }]);
     }
 
-    async function createUserIfNotExist() {
-      const telegramId = getTelegramUserId();
-      const referralId = getReferralIdFromURL();
+    console.log("User ID:", userId);
+  }
 
-      userId = telegramId || localStorage.getItem('user_id');
-      if (!userId) {
-        userId = 'user_' + Math.floor(Math.random() * 100000000);
-        localStorage.setItem('user_id', userId);
-      }
 
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .single();
+// ========================= 🔁 Global Variables =========================
+let mshya = parseInt(localStorage.getItem("mshya")) || 0;
+let totalShya = parseFloat(localStorage.getItem("totalShya")) || 0;
+let shyaPerHour = parseInt(localStorage.getItem("shyaPerHour")) || 0;
+let energy = parseInt(localStorage.getItem("energy")) || 1000;
+const maxEnergy = 1000;
 
-      if (!data) {
-        let newUser = { id: userId, coins: 0 };
-        if (referralId && referralId !== userId) {
-          newUser.referred_by = referralId;
+let upgradeLevel = parseInt(localStorage.getItem("upgradeLevel")) || 1;
+let currentPrice = parseInt(localStorage.getItem("currentPrice")) || 500;
+let currentProfit = 0;
+let tapPower = parseInt(localStorage.getItem("tapPower") || "1");
+let coinUpgradeCost = parseInt(localStorage.getItem("coinUpgradeCost") || "500");
+let lastTapTime = 0;
+let energyRecoverySpeed = parseInt(localStorage.getItem("energyRecoverySpeed")) || 5;
+let energyInterval;
+const mshyaDisplay = document.getElementById("counter1");
+const shyaDisplay = document.getElementById("counter2");
 
-          // Reward the referrer with coins
-          const { data: refData } = await supabase
-            .from('users')
-            .select('coins')
-            .eq('id', referralId)
-            .single();
+const emojis = [ "🥐","🫓","🍞","🍟","💎","💰","🧀","💵","💸","🪙", "💽","💾","🖱️","🖨️","⌨️","💻","🖥️","🔌","📠","📟", "📱","☎️","📞","🗝️","🛡️","🗡️","⚔️","🖇️","📎","⛓️", "🔗","⛓️‍💥","⚙️","⛏️","⚒️","🛠️","👽","🪨","🪵","🚨", "⛽","🛢️","🧭","🛞","🛟","⚓","🛑","✈️","🛩️","🚁","🛸","🚀"];
 
-          if (refData) {
-            const newCoins = (refData.coins || 0) + 1000;
-            await supabase
-              .from('users')
-              .update({ coins: newCoins })
-              .eq('id', referralId);
-          }
-        }
+let tasksCompleted = JSON.parse(localStorage.getItem("tasksCompleted")) || {
+  instagram: "none",
+  youtube: "none"
+};
 
-        await supabase.from('users').insert([newUser]);
-        coins = 0;
+// ========================= ⚡ Energy =========================
+function updateEnergyUI() {
+  const fill = document.querySelector('.energy-fill');
+  const text = document.querySelector('.energy-text');
+  const percentage = (energy / maxEnergy) * 100;
+  fill.style.width = percentage + '%';
+  text.innerText = `${energy} / ${maxEnergy}`;
+}
+
+function startEnergyRecovery() {
+  if (energyInterval) clearInterval(energyInterval);
+
+  energyRecoverySpeed = parseFloat(localStorage.getItem("energyRecoverySpeed")) || 5;
+  const delay = energyRecoverySpeed * 1000;
+
+  if (delay <= 0 || isNaN(delay)) {
+    console.warn("❌ Invalid energyRecoverySpeed:", energyRecoverySpeed);
+    return;
+  }
+
+  energyInterval = setInterval(() => {
+    if (energy < maxEnergy) {
+      energy++;
+      localStorage.setItem("lastEnergyUpdate", Date.now()); // ✅ ये लाइन जरूरी है
+      updateEnergyUI();
+      saveData();
+    }
+  }, delay);
+}
+
+// ========================= 🚀 Passive SHYA Profit =========================
+setInterval(() => {
+  totalShya += shyaPerHour / 3600;
+  updateShyaDisplay();
+  saveData();
+}, 1000);
+
+// ========================= 💰 Tap =========================
+function handleTap(event) {
+  const now = Date.now();
+  if (now - lastTapTime < 50) return;
+  lastTapTime = now;
+
+  if (energy <= 0) {
+    alert("⚠️ Energy over! Please wait.");
+    return;
+  }
+
+  energy--;
+  mshya += tapPower;
+  updateEnergyUI();
+  updateUpgradeUI();
+  saveData();
+
+  const tapText = document.createElement("div");
+  tapText.className = "tap-text";
+  tapText.innerText = `+${tapPower} MSHYA`;
+  tapText.style.left = event.clientX + "px";
+  tapText.style.top = event.clientY + "px";
+  document.body.appendChild(tapText);
+  setTimeout(() => tapText.remove(), 1000);
+}
+
+let autoTapEnabled = localStorage.getItem("autoTapEnabled") === "true";
+let autoTapExpiry = parseInt(localStorage.getItem("autoTapExpiry")) || 0;
+let autoTapInterval;
+let autoTapSpeed = 100; // 0.1 sec
+
+function buyAutoTap(durationMs, cost, type) {
+  if (type === "MSHYA" && mshya >= cost) {
+    mshya -= cost;
+  } else if (type === "TON") {
+    alert("🚧 TON Payment system not active yet.");
+    return;
+  } else {
+    alert("❌ Not enough balance.");
+    return;
+  }
+
+  autoTapEnabled = true;
+  autoTapExpiry = Date.now() + durationMs;
+
+  localStorage.setItem("autoTapEnabled", "true");
+  localStorage.setItem("autoTapExpiry", autoTapExpiry.toString());
+  saveData();
+  startAutoTap();
+  alert("✅ Auto Tap Activated for " + (durationMs / 60000).toFixed(0) + " min");
+}
+
+function startAutoTap() {
+  if (autoTapInterval) clearInterval(autoTapInterval);
+  if (!autoTapEnabled) return;
+
+  autoTapInterval = setInterval(() => {
+    if (Date.now() > autoTapExpiry) {
+      autoTapEnabled = false;
+      localStorage.setItem("autoTapEnabled", "false");
+      document.getElementById("autoTapStatus").innerHTML = `<span style="color:red;">OFF</span>`;
+      document.getElementById("autoTapTimer").innerText = "-";
+      clearInterval(autoTapInterval);
+      return;
+    }
+
+    handleTap(); // your existing tap logic
+    localStorage.setItem("lastAutoTapCollect", Date.now()); // ✅ Add this line
+    updateAutoTapUI();
+  }, autoTapSpeed);
+}
+
+function updateAutoTapUI() {
+  document.getElementById("autoTapStatus").innerHTML = `<span style="color:green;">ON</span>`;
+  let remaining = autoTapExpiry - Date.now();
+  if (remaining > 0) {
+    let mins = Math.floor(remaining / 60000);
+    let secs = Math.floor((remaining % 60000) / 1000);
+    document.getElementById("autoTapTimer").innerText = `${mins}m ${secs}s`;
+  }
+}
+
+setInterval(() => {
+  if (autoTapEnabled) updateAutoTapUI();
+}, 1000); // update timer every second
+
+// On game start
+if (autoTapEnabled && Date.now() < autoTapExpiry) {
+  startAutoTap();
+} else {
+  autoTapEnabled = false;
+  localStorage.setItem("autoTapEnabled", "false");
+}
+// ========================= 🔧 Upgrade Section =========================
+function buyUpgrade() {
+  if (mshya < currentPrice) {
+    alert("❌ Not enough MSHYA!");
+    return;
+  }
+
+  mshya -= currentPrice;
+  const base = 100 + upgradeLevel * 5;
+  const randomBoost = Math.floor(Math.random() * 20);
+  const profitBoost = base + randomBoost;
+
+  shyaPerHour += profitBoost;
+  currentProfit = profitBoost;
+  upgradeLevel++;
+  currentPrice = Math.floor(500 * Math.pow(1.15, upgradeLevel));
+
+  updateUpgradeUI();
+  saveData();
+}
+
+function updateUpgradeUI() {
+  const emoji = emojis[(upgradeLevel - 1) % emojis.length];
+  partEmoji.innerText = emoji;
+  partLevel.innerText = upgradeLevel;
+  priceAmount.innerText = currentPrice.toLocaleString();
+  profitAmount.innerText = currentProfit.toLocaleString();
+  mshyaDisplay.innerText = mshya.toLocaleString();
+  updateShyaDisplay();
+}
+
+// ========================= 🔧 Tap Power Upgrade =========================
+function upgradeCoinTap() {
+  mshya = parseInt(localStorage.getItem("mshya")) || 0;
+
+  if (mshya >= coinUpgradeCost) {
+    tapPower++;
+    mshya -= coinUpgradeCost;
+    coinUpgradeCost = getRandomPriceIncrease(coinUpgradeCost);
+
+    localStorage.setItem("tapPower", tapPower);
+    localStorage.setItem("mshya", mshya);
+    localStorage.setItem("coinUpgradeCost", coinUpgradeCost);
+
+    document.getElementById("tapPower").innerText = tapPower;
+    document.getElementById("coinUpgradeCost").innerText = coinUpgradeCost.toLocaleString();
+    updateCoinBalanceUI();
+    updateUpgradeUI();
+    updateShyaDisplay();
+    updateEnergyUI();
+  } else {
+    alert(`🪙 आपके पास पर्याप्त MSHYA नहीं हैं!\nआपके पास: ${mshya.toLocaleString()} 🔸 चाहिए: ${coinUpgradeCost.toLocaleString()}`);
+  }
+}
+
+function getRandomPriceIncrease(price) {
+  const inc = Math.floor(Math.random() * 5000) + 50;
+  return Math.min(price + inc, 999999);
+}
+
+function updateCoinBalanceUI() {
+  const coinDisplay = document.getElementById("coinCount");
+  if (coinDisplay) {
+    coinDisplay.innerText = mshya.toLocaleString();
+  }
+}
+
+// ========================= 🎁 Task System =========================
+function handleTask(platform) {
+  const btn = document.querySelector(`button[onclick="handleTask('${platform}')"]`);
+  if (tasksCompleted[platform] === "claimed") {
+    alert("आपने पहले ही यह टास्क पूरा कर लिया है!");
+    return;
+  }
+
+  if (tasksCompleted[platform] === "started") {
+    if (confirm("क्या आपने टास्क पूरा कर लिया? Claim करने के लिए OK दबाएं।")) {
+      totalShya += 100;
+      tasksCompleted[platform] = "claimed";
+      btn.innerText = "Claimed ✅"; btn.disabled = true;
+      updateShyaDisplay();
+      localStorage.setItem("tasksCompleted", JSON.stringify(tasksCompleted));
+      localStorage.setItem("totalShya", totalShya);
+    }
+    return;
+  }
+
+  const urls = {
+    instagram: 'https://www.instagram.com/your_page',
+    youtube: 'https://www.youtube.com/your_channel'
+  };
+  window.open(urls[platform], '_blank');
+
+  btn.innerText = "Waiting... ⏳";
+  btn.disabled = true;
+  tasksCompleted[platform] = "started";
+  localStorage.setItem("tasksCompleted", JSON.stringify(tasksCompleted));
+
+  setTimeout(() => {
+    btn.innerText = "Claim";
+    btn.disabled = false;
+  }, 5000);
+}
+
+
+// 💰 Buy buttons पर listener लगाओ
+document.querySelectorAll('.shop-buy').forEach((button, index) => {
+  button.addEventListener('click', async () => {
+    const row = button.closest('.shop-row');
+    const amountText = row.querySelector('.shop-amount').innerText;
+    const mshyaAmount = parseInt(amountText.replace(/[^0-9]/g, ''));
+
+    // ✅ यहां fake payment simulate कर रहे हैं (TON gateway future में जोड़ना)
+    const confirmed = confirm(`क्या आप ${mshyaAmount.toLocaleString()} MSHYA खरीदना चाहते हैं?`);
+    if (!confirmed) return;
+
+    // ⛓️ Telegram user ID लेना (webApp से)
+    const tg = window.Telegram.WebApp;
+    const userId = tg.initDataUnsafe?.user?.id;
+    if (!userId) {
+      alert('User ID नहीं मिला');
+      return;
+    }
+
+    // ✅ Supabase से user fetch करो
+    let { data: user, error } = await supabase
+      .from('users')
+      .select('mshya')
+      .eq('tg_id', userId)
+      .single();
+
+    if (error) {
+      alert('User नहीं मिला Supabase में');
+      return;
+    }
+
+    const newBalance = (user.mshya || 0) + mshyaAmount;
+
+    // 🔄 Supabase में balance update करो
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({ mshya: newBalance })
+      .eq('tg_id', userId);
+
+    if (updateError) {
+      alert('Balance update में error आया!');
+    } else {
+      alert(`${mshyaAmount.toLocaleString()} MSHYA coins आपके अकाउंट में जोड़ दिए गए!`);
+    }
+  });
+});
+
+// ========================= 🛒 Energy Pack Purchase =========================
+// ✅ Initialization: अगर पहले से coin नहीं हैं, तो सेट करो
+if (localStorage.getItem("mshya") === null) {
+  localStorage.setItem("mshya", 60000);
+}
+
+// ✅ User data from storage
+let userData = {
+  mshya: parseFloat(localStorage.getItem("mshya"))
+};
+
+// ✅ Update balance on screen
+function updateBalanceUI() {
+  const el = document.getElementById("mshyaBalance");
+  if (el) el.innerText = userData.mshya.toLocaleString();
+}
+
+// ✅ Energy Packs
+const packs = {
+  1: { cost: 10000, type: 'mshya', speed: 4 },
+  2: { cost: 25000, type: 'mshya', speed: 3 },
+  3: { cost: 50000, type: 'mshya', speed: 2 },
+  4: { cost: 0.5, type: 'ton', speed: 1, duration: 30 * 24 * 60 * 60 * 1000 },
+  5: { cost: 1, type: 'ton', speed: 0.1, duration: 30 * 24 * 60 * 60 * 1000 },
+  6: { cost: 0.0001, type: 'ton', speed: 1, duration: 10 * 60 * 60 * 1000 }
+};
+
+function checkActiveEnergyPacks() {
+  Object.keys(packs).forEach((key) => {
+    const pack = packs[key];
+    if (pack.type === 'ton') {
+      const endTime = parseInt(localStorage.getItem(`energyPackEndTime${key}`));
+      const now = Date.now();
+
+      if (endTime && endTime > now) {
+        // ✅ Pack अभी भी एक्टिव है
+        energyRecoverySpeed = pack.speed;
+        localStorage.setItem("energyRecoverySpeed", energyRecoverySpeed);
+        startEnergyRecovery();
+        startEnergyTimerUI(endTime, key);
       } else {
-        coins = data.coins || 0;
+        // ✅ Pack Expired है — speed reset मत करो, बस timer मत दिखाओ
       }
+    }
+  });
+}
 
-      updateUI();
-      updateReferralLink();
+// ✅ Buy Energy Pack
+function buyEnergyPack(option) {
+  const pack = packs[option];
+  if (!pack) {
+    alert("❌ Invalid pack option");
+    return;
+  }
+
+  const btn = document.querySelector(`#buyPack${option}`);
+  if (!btn) {
+    alert("❌ Button not found");
+    return;
+  }
+
+  if (pack.type === 'mshya') {
+  if (userData.mshya < pack.cost) {
+    alert("❌ Not enough MSHYA balance");
+    return;
+  }
+
+  // 🔽 Deduct coins and save
+  userData.mshya -= pack.cost;
+  localStorage.setItem("mshya", userData.mshya);
+  updateBalanceUI();
+
+  // ✅ SET ENERGY SPEED
+  energyRecoverySpeed = pack.speed;
+  localStorage.setItem("energyRecoverySpeed", energyRecoverySpeed);
+  startEnergyRecovery(); // 🔄 Restart with new speed
+
+  btn.innerText = "Activated";
+  btn.disabled = true;
+  alert(`✅ Pack ${option} Activated (MSHYA)`);
+
+
+  } else if (pack.type === 'ton') {
+  const now = Date.now();
+  const endTime = now + pack.duration;
+
+  // ✅ Fake Payment: Direct Activation
+  energyRecoverySpeed = pack.speed;
+  localStorage.setItem("energyRecoverySpeed", energyRecoverySpeed);
+  localStorage.setItem(`energyPackEndTime${option}`, endTime);
+  startEnergyRecovery();
+  startEnergyTimerUI(endTime, option);
+
+  alert(`✅ Pack ${option} Activated (TON — बिना भुगतान के)`);
+}
+}
+
+// ✅ Timer for TON pack
+function startEnergyTimerUI(endTime, packId) {
+  const btn = document.querySelector(`#buyPack${packId}`);
+  if (!btn) {
+    alert("❌ Button not found");
+    return;
+  }
+
+  const interval = setInterval(() => {
+    const now = Date.now();
+    const remaining = endTime - now;
+
+    if (remaining <= 0) {
+      clearInterval(interval);
+      btn.innerText = "Buy";
+      btn.disabled = false;
+    } else {
+      const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const mins = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+      const secs = Math.floor((remaining % (1000 * 60)) / 1000);
+      btn.innerText = `Ends in: ${days}d ${hours}h ${mins}m ${secs}s`;
+      btn.disabled = true;
+    }
+  }, 1000);
+}
+
+// ✅ Call updateBalanceUI() on page load
+updateBalanceUI();
+
+
+// ========================= 💾 Save & Reset =========================
+async function saveData() {
+  // ✅ Local Storage Save
+  localStorage.setItem("mshya", mshya);
+  localStorage.setItem("totalShya", totalShya);
+  localStorage.setItem("shyaPerHour", shyaPerHour);
+  localStorage.setItem("upgradeLevel", upgradeLevel);
+  localStorage.setItem("currentPrice", currentPrice);
+  localStorage.setItem("energy", energy);
+  localStorage.setItem("tapPower", tapPower);
+  localStorage.setItem("coinUpgradeCost", coinUpgradeCost);
+  localStorage.setItem("lastEnergyUpdate", Date.now());
+  localStorage.setItem("lastEnergyUpdateTime", Date.now().toString());
+
+  // ✅ Supabase Update
+  if (userId) {
+    const { error } = await supabase
+      .from('users')
+      .update({
+        mshya: mshya,
+        total_shya: totalShya,
+        shya_per_hour: shyaPerHour,
+        upgrade_level: upgradeLevel,
+        energy: energy,
+        tap_power: tapPower
+      })
+      .eq('id', userId);
+
+    if (error) {
+      console.error("❌ Supabase Update Error:", error.message);
+    } else {
+      console.log("✅ Supabase Updated for user:", userId);
+    }
+  }
+}
+function resetProgress() {
+  if (!confirm("क्या आप वाकई में अपनी सारी प्रगति हटाना चाहते हैं?")) return;
+
+  localStorage.clear();
+
+  mshya = 0;
+  totalShya = 0;
+  shyaPerHour = 0;
+  upgradeLevel = 1;
+  currentPrice = 500;
+  currentProfit = 0;
+  energy = maxEnergy;
+  tapPower = 1;
+  coinUpgradeCost = 500;
+
+  localStorage.setItem("lastExitTime", Date.now());
+
+  updateUpgradeUI();
+  updateEnergyUI();
+  updateShyaDisplay();
+  document.getElementById("tapPower").textContent = tapPower;
+  document.getElementById("coinUpgradeCost").textContent = coinUpgradeCost;
+
+  alert("✅ आपकी प्रगति Reset कर दी गई है!");
+
+  // 👇 यह लाइन जोड़ दें ताकि energy recovery और पूरा गेम दोबारा चालू हो जाए
+  location.reload();
+}
+
+// ========================= 🖥️ UI Display =========================
+function updateShyaDisplay() {
+  if (shyaDisplay) shyaDisplay.innerText = Math.floor(totalShya).toLocaleString();
+  if (rateText) rateText.innerText = `+${shyaPerHour}/h 🚀`;
+  if (mshyaDisplay) mshyaDisplay.innerText = mshya.toLocaleString();
+}
+function showSection(id) {
+  document.querySelectorAll(".section").forEach(sec => sec.style.display = "none");
+  const active = document.getElementById(id);
+  if (active) active.style.display = "block";
+}
+
+
+// ========================= 🔁 On Page Load =========================
+document.addEventListener("DOMContentLoaded", () => {
+  const now = Date.now();
+
+  // 💰 SHYA Offline Earnings
+  const lastCollected = localStorage.getItem("lastCollectedTime");
+  if (lastCollected) {
+    const seconds = Math.floor((now - parseInt(lastCollected)) / 1000);
+    const offlineEarnings = Math.floor((shyaPerHour / 3600) * seconds);
+    if (offlineEarnings > 0) {
+      totalShya += offlineEarnings;
+      alert(`💰 आपने ऑफलाइन रहते हुए ${offlineEarnings} SHYA कमाए!`);
+    }
+  }
+  localStorage.setItem("lastCollectedTime", now.toString());
+
+  // 🤖 Auto Tap की ऑफलाइन कमाई (अब MSHYA में — Fixed)
+  const autoTapEnabledStored = localStorage.getItem("autoTapEnabled") === "true";
+  const autoTapExpiry = parseInt(localStorage.getItem("autoTapExpiry")) || 0;
+  const autoTapSpeed = 100;
+  const lastTapTimeStored = parseInt(localStorage.getItem("lastTapTime")) || now;
+
+  const autoTapWasActive = autoTapExpiry > lastTapTimeStored;
+  if (autoTapEnabledStored || autoTapWasActive) {
+    const effectiveEndTime = Math.min(now, autoTapExpiry);
+    const offlineDuration = effectiveEndTime - lastTapTimeStored;
+    const totalTaps = Math.floor(offlineDuration / autoTapSpeed);
+    const earned = totalTaps * tapPower;
+
+    if (earned > 0) {
+      mshya += earned;
+      alert(`🤖 Auto Tap ने ऑफलाइन रहते हुए ${earned} MSHYA कमाए!`);
     }
 
-    async function tapAndEarn() {
-      coins += 1;
-      updateUI();
+    localStorage.setItem("lastTapTime", now.toString());
+  }
 
-      await supabase
-        .from('users')
-        .update({ coins })
-        .eq('id', userId);
+  // ⚡ Energy Offline Recovery
+  const lastEnergyTime = parseInt(localStorage.getItem("lastEnergyUpdateTime"));
+  const storedSpeed = parseFloat(localStorage.getItem("energyRecoverySpeed")) || 5;
+  if (lastEnergyTime && storedSpeed > 0) {
+    const elapsed = Math.floor((now - lastEnergyTime) / 1000);
+    const recovered = Math.floor(elapsed / storedSpeed);
+    if (recovered > 0 && energy < maxEnergy) {
+      energy = Math.min(energy + recovered, maxEnergy);
     }
+  }
+  localStorage.setItem("lastEnergyUpdateTime", now.toString());
 
-    function updateUI() {
-      document.getElementById('coinsDisplay').innerText = `Coins: ${coins}`;
-    }
+  // 🎮 Event Listeners & UI Setup
+  document.getElementById("coin")?.addEventListener("click", handleTap);
+  document.getElementById("coin")?.addEventListener("touchstart", handleTap);
+  document.getElementById("resetButton")?.addEventListener("click", resetProgress);
 
-    function showSection(id, el) {
-      document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
+  ["instagram", "youtube"].forEach(platform => {
+    const btn = document.querySelector(`button[onclick="handleTask('${platform}')"]`);
+    const status = tasksCompleted[platform];
+    btn.innerText = status === "claimed" ? "Claimed ✅" : (status === "started" ? "Claim" : "Start");
+    btn.disabled = status === "claimed";
+  });
 
-      document.getElementById('tapImage').style.display = (id === 'tap') ? 'block' : 'none';
+  document.getElementById("coinUpgradeCost").innerText = coinUpgradeCost.toLocaleString();
 
-      const sectionTitles = {
-        refer: "Refer & Earn",
-        shop: "Shop",
-        tap: "Tap to Earn",
-        upgrade: "Upgrade",
-        task: "Task"
-      };
-      document.getElementById('section-title').innerText = sectionTitles[id];
+  // 🔄 UI Refresh
+  updateUpgradeUI();
+  updateEnergyUI();
+  updateShyaDisplay();
+  updateCoinBalanceUI();
 
-      document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-      el.classList.add('active');
-    }
+  // 🔁 Systems Start
+  startAutoTap();
+  checkActiveEnergyPacks();
+  createUserIfNotExist();
+  startEnergyRecovery();
+});
+window.addEventListener("beforeunload", () => {
+  localStorage.setItem("lastCollectedTime", Date.now().toString());
+  localStorage.setItem("lastEnergyUpdateTime", Date.now().toString());
+  localStorage.setItem("lastTapTime", Date.now().toString());
+});
 
-    function updateReferralLink() {
-      const refLink = `https://t.me/Shyamining_bot?start=${userId}`;
-      document.getElementById('refLink').innerText = refLink;
+</script>
 
-      document.getElementById('copyBtn').onclick = () => {
-        navigator.clipboard.writeText(refLink).then(() => {
-          alert('Referral link copied!');
-        });
-      };
-    }
-
-    document.getElementById('tapImage').addEventListener('click', tapAndEarn);
-    createUserIfNotExist();
-  </script>
 </body>
 </html>
