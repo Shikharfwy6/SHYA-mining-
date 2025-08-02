@@ -888,7 +888,7 @@ document.querySelectorAll('.shop-buy').forEach((button, index) => {
     let { data: user, error } = await supabase
       .from('users')
       .select('mshya')
-      .eq('id', userId) // 🔁 यहां 'id' किया 'tg_id' की जगह
+      .eq('tg_id', userId) // ✅ fix here
       .single();
 
     if (error || !user) {
@@ -902,7 +902,7 @@ document.querySelectorAll('.shop-buy').forEach((button, index) => {
     const { error: updateError } = await supabase
       .from('users')
       .update({ mshya: newBalance })
-      .eq('id', userId); // 🔁 यहीं भी 'id'
+      .eq('tg_id', userId); // ✅ fix here too
 
     if (updateError) {
       alert('Balance update में error आया!');
