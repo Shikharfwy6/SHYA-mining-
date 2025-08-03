@@ -861,53 +861,51 @@ function handleTask(platform) {
   }, 5000);
 }
 
-// 💰 Buy buttons पर listener लगाना
-document.querySelectorAll('.shop-buy').forEach((button) => {
-  button.addEventListener('click', async () => {
-    const row = button.closest('.shop-row');
-    const amountText = row.querySelector('.shop-amount').innerText;
-    const mshyaAmount = parseInt(amountText.replace(/[^0-9]/g, ''));
 
-    const confirmed = confirm(`क्या आप ${mshyaAmount.toLocaleString()} MSHYA खरीदना चाहते हैं?`);
-    if (!confirmed) return;
+ // 💰 Buy buttons पर listener
+  document.querySelectorAll('.shop-buy').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const row = button.closest('.shop-row');
+      const amountText = row.querySelector('.shop-amount').innerText;
+      const mshyaAmount = parseInt(amountText.replace(/[^0-9]/g, ''));
 
-    const buyUserId = getTelegramUserId();
+      const confirmed = confirm(`क्या आप ${mshyaAmount.toLocaleString()} MSHYA खरीदना चाहते हैं?`);
+      if (!confirmed) return;
 
-    if (!buyUserId) {
-      alert('❌ Telegram से User ID नहीं मिली। कृपया Telegram Bot के अंदर गेम खोलें।');
-      return;
-    }
+      const buyUserId = getTelegramUserId();
 
-    // 🔍 पहले user का current mshya balance ले लो
-    let { data: user, error: getError } = await supabase
-      .from('users')
-      .select('mshya')
-      .eq('id', buyUserId)
-      .single();
+      if (!buyUserId) {
+        alert('❌ Telegram से User ID नहीं मिली। कृपया Telegram Bot के अंदर गेम खोलें।');
+        return;
+      }
 
-    if (getError || !user) {
-      console.error(getError);
-      alert('❌ User नहीं मिला Supabase में। हो सकता है आपने signup/register नहीं किया हो।');
-      return;
-    }
+      // 🔍 Supabase से user data निकालना
+      const { data: user, error } = await supabaseClient
+        .from('users')
+        .select('mshya')
+        .eq('id', buyUserId)
+        .single();
 
-    const currentBalance = user.mshya || 0;
-    const newBalance = currentBalance + mshyaAmount;
+      if (error || !user) {
+        alert('❌ User नहीं मिला Supabase में। हो सकता है आपने signup/register नहीं किया हो।');
+        return;
+      }
 
-    // 🔄 Update mshya balance
-    const { error: updateError } = await supabase
-      .from('users')
-      .update({ mshya: newBalance })
-      .eq('id', buyUserId);
+      const newBalance = (user.mshya || 0) + mshyaAmount;
 
-    if (updateError) {
-      console.error(updateError);
-      alert('❌ Balance update में error आया!');
-    } else {
-      alert(`✅ ${mshyaAmount.toLocaleString()} MSHYA coins आपके अकाउंट में जोड़ दिए गए!`);
-    }
+      // ✅ Supabase में balance update करना
+      const { error: updateError } = await supabaseClient
+        .from('users')
+        .update({ mshya: newBalance })
+        .eq('id', buyUserId);
+
+      if (updateError) {
+        alert('❌ Balance update में error आया!');
+      } else {
+        alert(`✅ ${mshyaAmount.toLocaleString()} MSHYA coins आपके अकाउंट में जोड़ दिए गए!`);
+      }
+    });
   });
-});
 
 
 // ========================= 🛒 Energy Pack Purchase =========================
