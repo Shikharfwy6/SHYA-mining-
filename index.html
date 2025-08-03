@@ -878,11 +878,11 @@ document.querySelectorAll('.shop-buy').forEach((button) => {
       return;
     }
 
-    // ✅ अब 'tg_id' के आधार पर यूज़र ढूंढो (id नहीं)
+    // ✅ Supabase में 'id' field से match करें
     let { data: user, error } = await supabase
       .from('users')
       .select('mshya')
-      .eq('tg_id', buyUserId)
+      .eq('id', buyUserId.toString()) // toString() ensure it's string format
       .single();
 
     if (error || !user) {
@@ -892,11 +892,10 @@ document.querySelectorAll('.shop-buy').forEach((button) => {
 
     const newBalance = (user.mshya || 0) + mshyaAmount;
 
-    // ✅ यूज़र का balance अपडेट करो
     const { error: updateError } = await supabase
       .from('users')
       .update({ mshya: newBalance })
-      .eq('tg_id', buyUserId);
+      .eq('id', buyUserId.toString());
 
     if (updateError) {
       alert('❌ Balance update में error आया!');
@@ -906,12 +905,10 @@ document.querySelectorAll('.shop-buy').forEach((button) => {
   });
 });
 
-// 🔍 Telegram ID लेने वाला helper function
 function getTelegramUserId() {
   const tg = window.Telegram.WebApp;
   return tg?.initDataUnsafe?.user?.id || null;
 }
-
 
 // ========================= 🛒 Energy Pack Purchase =========================
 // ✅ Initialization: अगर पहले से coin नहीं हैं, तो सेट करो
