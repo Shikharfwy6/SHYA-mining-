@@ -563,39 +563,35 @@ const supabaseUrl = 'https://vaxelepziqqpteyqokrc.supabase.co';
     const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 
-const tg = window.Telegram.WebApp;
-
-// ✅ Telegram से यूज़र ID लो एक ही फॉर्मेट में
-  // Function to get Telegram User ID
-  function getTelegramUserId() {
-    if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) {
-      return Telegram.WebApp.initDataUnsafe.user.id.toString();
-    }
-    return null;
-  }
-
+// ✅ सिर्फ LocalStorage से User ID बनाओ और इस्तेमाल करो
 let userId = '';
 
+// 🔄 Function to create user if not exists
 async function createUserIfNotExist() {
-  userId = getTelegramUserId() || localStorage.getItem('user_id');
+  // Try to get from localStorage
+  userId = localStorage.getItem('user_id');
 
+  // अगर नहीं मिला, तो नया बनाओ और save करो
   if (!userId) {
     userId = 'user_' + Math.floor(Math.random() * 100000000);
     localStorage.setItem('user_id', userId);
   }
 
+  // Supabase में चेक करो user exists है या नहीं
   const { data, error } = await supabase
     .from('users')
     .select('id')
     .eq('id', userId)
     .single();
 
+  // अगर नहीं है, तो नया insert करो
   if (!data) {
     await supabase.from('users').insert([{ id: userId }]);
   }
 
   console.log("✅ User ID Set:", userId);
 }
+
 
 
 // ========================= 🔁 Global Variables =========================
