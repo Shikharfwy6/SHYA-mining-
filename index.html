@@ -861,7 +861,7 @@ function handleTask(platform) {
   }, 5000);
 }
 
-// 💰 Buy buttons पर listener
+// 💰 Buy buttons पर listener लगाना
 document.querySelectorAll('.shop-buy').forEach((button) => {
   button.addEventListener('click', async () => {
     const row = button.closest('.shop-row');
@@ -878,26 +878,30 @@ document.querySelectorAll('.shop-buy').forEach((button) => {
       return;
     }
 
-    // ✅ Supabase में 'id' field से match करें
-    let { data: user, error } = await supabase
+    // 🔍 पहले user का current mshya balance ले लो
+    let { data: user, error: getError } = await supabase
       .from('users')
       .select('mshya')
-      .eq('id', buyUserId.toString()) // toString() ensure it's string format
+      .eq('id', buyUserId)
       .single();
 
-    if (error || !user) {
+    if (getError || !user) {
+      console.error(getError);
       alert('❌ User नहीं मिला Supabase में। हो सकता है आपने signup/register नहीं किया हो।');
       return;
     }
 
-    const newBalance = (user.mshya || 0) + mshyaAmount;
+    const currentBalance = user.mshya || 0;
+    const newBalance = currentBalance + mshyaAmount;
 
+    // 🔄 Update mshya balance
     const { error: updateError } = await supabase
       .from('users')
       .update({ mshya: newBalance })
-      .eq('id', buyUserId.toString());
+      .eq('id', buyUserId);
 
     if (updateError) {
+      console.error(updateError);
       alert('❌ Balance update में error आया!');
     } else {
       alert(`✅ ${mshyaAmount.toLocaleString()} MSHYA coins आपके अकाउंट में जोड़ दिए गए!`);
@@ -905,10 +909,6 @@ document.querySelectorAll('.shop-buy').forEach((button) => {
   });
 });
 
-function getTelegramUserId() {
-  const tg = window.Telegram.WebApp;
-  return tg?.initDataUnsafe?.user?.id || null;
-}
 
 // ========================= 🛒 Energy Pack Purchase =========================
 // ✅ Initialization: अगर पहले से coin नहीं हैं, तो सेट करो
