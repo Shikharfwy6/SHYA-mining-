@@ -571,12 +571,13 @@ const supabaseUrl = 'https://vaxelepziqqpteyqokrc.supabase.co';
 const tg = window.Telegram.WebApp;
 
 // ✅ Telegram से यूज़र ID लो एक ही फॉर्मेट में
-function getTelegramUserId() {
-  if (tg?.initDataUnsafe?.user?.id) {
-    return 'tg_' + tg.initDataUnsafe.user.id;
+ // Function to get Telegram User ID
+  function getTelegramUserId() {
+    if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) {
+      return Telegram.WebApp.initDataUnsafe.user.id.toString();
+    }
+    return null;
   }
-  return null;
-}
 
 let userId = '';
 
